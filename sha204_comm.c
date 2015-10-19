@@ -39,7 +39,6 @@
  * \asf_license_stop
  *
  */
-#include <unistd.h>
 #include "sha204_comm.h"                //!< definitions and declarations for the Communication module
 //#include "sha204_timer.h"               //!< definitions for timer functions
 #include "sha204_lib_return_codes.h"    //!< declarations of function return codes

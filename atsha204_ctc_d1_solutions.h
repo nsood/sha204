@@ -1,23 +1,15 @@
-/*
- * $safeprojectname$.h
- *
- * Created: 7/10/2013 1:55:40 PM
- *  Author: easanghanwa
- */ 
-
-#ifndef ATSHA204_CTC_D1_H_
-#define ATSHA204_CTC_D1_H_
-
-#include <stdint.h>
 #include <stdio.h>
-
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <sys/ioctl.h>
 #include <string.h>
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
+
+#ifndef ATSHA204_CTC_D1_H_
+#define ATSHA204_CTC_D1_H_
 
 // ATSHA204 Specific
 #include "sha256.h"

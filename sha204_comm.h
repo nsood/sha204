@@ -2,7 +2,6 @@
 #   define SHA204_COMM_H
 
 #include "sha204_physical.h"        //!< declarations that are common to all interface implementations
-#include <unistd.h>
 
 //! maximum command delay
 #define SHA204_COMMAND_EXEC_MAX      (69)

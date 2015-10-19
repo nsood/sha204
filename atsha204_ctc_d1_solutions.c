@@ -10,7 +10,7 @@
 #define I2C_BUS       "/dev/i2c-0"
 #define ATSHA204_ADDR  0x64
 
-int main(void)
+int main(int argc,char* argv[])
 {
 	int fd;
 	if ((fd = open(I2C_BUS, O_RDWR)) < 0) {

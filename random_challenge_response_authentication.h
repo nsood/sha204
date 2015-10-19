@@ -8,7 +8,7 @@
 
 #ifndef RANDOM_CHALLENGE_RESPONSE_AUTHENTICATION_H_
 #define RANDOM_CHALLENGE_RESPONSE_AUTHENTICATION_H_
-#include <stdint.h>
+
 #include "sha204_lib_return_codes.h"   // declarations of function return codes
 #include "sha204_comm_marshaling.h"
 #include "sha204_helper.h"
