@@ -8,16 +8,16 @@
 #include "atsha204_DevRev_cmd.h"
 
 
-void atsha204_DevRev_cmd(void){
+void atsha204_DevRev_cmd(int fd){
 	
 	static uint8_t status = SHA204_SUCCESS;
 		
 	// Message via LCD
-	write_lcd(1,"ATSHA204 DevRev CMD");
+	printf("ATSHA204 DevRev CMD d_1\n");
 
 	// Wake the ATSHA204 Device
-	status = sha204p_wakeup();
-	if(status != SHA204_SUCCESS) { write_lcd(2,"Wakeup FAILED!"); return; }
+	status = sha204p_wakeup(fd);
+	if(status != SHA204_SUCCESS) { printf("Wakeup FAILED! d_2\n"); return; }
 	
 
 	// Use the DevRev command to check communication to chip by validating value received.
@@ -36,18 +36,18 @@ void atsha204_DevRev_cmd(void){
 	cmd_args.tx_buffer		= global_tx_buffer;				// Pointer to the transmit buffer
 	cmd_args.rx_size		= sizeof(global_rx_buffer);		// Size of the receive buffer
 	cmd_args.rx_buffer		= global_rx_buffer;				// Pointer to the receive buffer
-	status = sha204m_execute(&cmd_args);						// Marshals the parameters and executes the command
+	status = sha204m_execute(fd,&cmd_args);						// Marshals the parameters and executes the command
 
-	sha204p_sleep();  // Put the chip to sleep in case you stop to examine buffer contents 
+	sha204p_sleep(fd);  // Put the chip to sleep in case you stop to examine buffer contents 
 	
 
 	// validate the received value for DevRev
 	if( status == SHA204_SUCCESS ) {
-		if( memcmp(&global_rx_buffer[1],ATSHA204_DEVREV_VALUE,0x04)) { write_lcd(2,"FAILED!"); return; }
+		if( memcmp(&global_rx_buffer[1],ATSHA204_DEVREV_VALUE,0x04)) { printf("FAILED! d_2\n"); return; }
 	}	
-	else { write_lcd(2,"FAILED!"); return; }
+	else { printf("FAILED! d_2\n"); return; }
 		
-	write_lcd(2,"SUCCESS!");
+	printf("SUCCESS! d_2\n");
 		
 	return;
 }

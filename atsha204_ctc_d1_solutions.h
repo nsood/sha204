@@ -8,12 +8,16 @@
 #ifndef ATSHA204_CTC_D1_H_
 #define ATSHA204_CTC_D1_H_
 
-// GENERAL
-#include <asf.h>
+#include <stdint.h>
+#include <stdio.h>
+
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 #include <string.h>
-#include "delay.h"
-#include "keyboard.h"
-#include "cdc.h"
 
 // ATSHA204 Specific
 #include "sha256.h"
@@ -24,10 +28,6 @@
 #include "sha204_comm.h" 
 #include "sha204_comm_marshaling.h"
 #include "sha204_config.h"
-#include "conf_atsha204.h"
-
-// Workshop Specific
-void atsha204_workshop_env_init(void);
 
 // Function pointer for topic selection
 typedef  void (*fptr) (void);
@@ -41,24 +41,10 @@ struct sha204_command_parameters cmd_args;				// Global Generalized Command Para
 
 
 //! Topics 
-extern void atsha204_DevRev_cmd(void);
-extern void atsha204_personalization(void);
-extern void random_challenge_response_authentication(void);
+extern void atsha204_DevRev_cmd(int fd);
+extern void atsha204_personalization(int fd);
+extern void random_challenge_response_authentication(int fd);
 
-
-
-/** \brief Utilities Functions
- */
-
-/** \brief write_lcd utility function
- *
- *	Write a one line message to the LCD screen
- *	\param line The line number to write: 1 or 2
- *	\param data	The text to write
- *	\return	none
- */
-void write_lcd(uint8_t line, const char data[22]);
-void write_terminal(const char data[81]);
 
 /** \brief Useful Device Macro Definitions
  */

@@ -524,20 +524,20 @@ struct sha204_command_parameters {
  *
  * @{
  */
-uint8_t sha204m_check_mac(struct sha204_check_mac_parameters *args);
-uint8_t sha204m_derive_key(struct sha204_derive_key_parameters *args);
-uint8_t sha204m_dev_rev(struct sha204_dev_rev_parameters *args);
-uint8_t sha204m_gen_dig(struct sha204_gen_dig_parameters *args);
-uint8_t sha204m_hmac(struct sha204_hmac_parameters *args);
-uint8_t sha204m_lock(struct sha204_lock_parameters *args);
-uint8_t sha204m_mac(struct sha204_mac_parameters *args);
-uint8_t sha204m_nonce(struct sha204_nonce_parameters *args);
-uint8_t sha204m_pause(struct sha204_pause_parameters *args);
-uint8_t sha204m_random(struct sha204_random_parameters *args);
-uint8_t sha204m_read(struct sha204_read_parameters *args);
-uint8_t sha204m_update_extra(struct sha204_update_extra_parameters *args);
-uint8_t sha204m_write(struct sha204_write_parameters *args);
-uint8_t sha204m_execute(struct sha204_command_parameters *args);
+uint8_t sha204m_check_mac(int fd,struct sha204_check_mac_parameters *args);
+uint8_t sha204m_derive_key(int fd,struct sha204_derive_key_parameters *args);
+uint8_t sha204m_dev_rev(int fd,struct sha204_dev_rev_parameters *args);
+uint8_t sha204m_gen_dig(int fd,struct sha204_gen_dig_parameters *args);
+uint8_t sha204m_hmac(int fd,struct sha204_hmac_parameters *args);
+uint8_t sha204m_lock(int fd,struct sha204_lock_parameters *args);
+uint8_t sha204m_mac(int fd,struct sha204_mac_parameters *args);
+uint8_t sha204m_nonce(int fd,struct sha204_nonce_parameters *args);
+uint8_t sha204m_pause(int fd,struct sha204_pause_parameters *args);
+uint8_t sha204m_random(int fd,struct sha204_random_parameters *args);
+uint8_t sha204m_read(int fd,struct sha204_read_parameters *args);
+uint8_t sha204m_update_extra(int fd,struct sha204_update_extra_parameters *args);
+uint8_t sha204m_write(int fd,struct sha204_write_parameters *args);
+uint8_t sha204m_execute(int fd,struct sha204_command_parameters *args);
 //! @}
 
 #endif

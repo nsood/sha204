@@ -38,15 +38,15 @@
 #define SHA204_WAKEUP_DELAY          (uint8_t) (3.0 * CPU_CLOCK_DEVIATION_POSITIVE + 0.5)
 
 
-uint8_t sha204p_send_command(uint8_t count, uint8_t *command);
-uint8_t sha204p_receive_response(uint8_t size, uint8_t *response);
+uint8_t sha204p_send_command(int fd,uint8_t count, uint8_t *command);
+uint8_t sha204p_receive_response(int fd,uint8_t size, uint8_t *response);
 void    sha204p_init(void);
 void    sha204p_set_device_id(uint8_t id);
-uint8_t sha204p_wakeup(void);
-uint8_t sha204p_idle(void);
-uint8_t sha204p_sleep(void);
-uint8_t sha204p_reset_io(void);
-uint8_t sha204p_resync(uint8_t size, uint8_t *response);
+uint8_t sha204p_wakeup(int fd);
+uint8_t sha204p_idle(int fd);
+uint8_t sha204p_sleep(int fd);
+uint8_t sha204p_reset_io(int fd);
+uint8_t sha204p_resync(int fd,uint8_t size, uint8_t *response);
 
 
 #endif

@@ -39,13 +39,13 @@
  * \asf_license_stop
  *
  */
-
+#include <unistd.h>
 #include "sha204_comm.h"                //!< definitions and declarations for the Communication module
 //#include "sha204_timer.h"               //!< definitions for timer functions
 #include "sha204_lib_return_codes.h"    //!< declarations of function return codes
 
 uint8_t sha204c_check_crc(uint8_t *response);
-uint8_t sha204c_resync(uint8_t size, uint8_t *response);
+uint8_t sha204c_resync(int fd,uint8_t size, uint8_t *response);
 
 /** \brief This function calculates CRC.
  *
@@ -99,13 +99,13 @@ uint8_t sha204c_check_crc(uint8_t *response)
  *  \param[out] response pointer to four-byte response
  *  \return status of the operation
  */
-uint8_t sha204c_wakeup(uint8_t *response)
+uint8_t sha204c_wakeup(int fd,uint8_t *response)
 {
-	uint8_t ret_code = sha204p_wakeup();
+	uint8_t ret_code = sha204p_wakeup(fd);
 	if (ret_code != SHA204_SUCCESS)
 		return ret_code;
 
-	ret_code = sha204p_receive_response(SHA204_RSP_SIZE_MIN, response);
+	ret_code = sha204p_receive_response(fd,SHA204_RSP_SIZE_MIN, response);
 	if (ret_code != SHA204_SUCCESS)
 		return ret_code;
 
@@ -121,7 +121,7 @@ uint8_t sha204c_wakeup(uint8_t *response)
 	}
 	if (ret_code != SHA204_SUCCESS)
 		//sha204h_delay_ms(SHA204_COMMAND_EXEC_MAX);
-		delay_ms(SHA204_COMMAND_EXEC_MAX);
+		usleep(SHA204_COMMAND_EXEC_MAX*1000);
 
 	return ret_code;
 }
@@ -151,19 +151,19 @@ uint8_t sha204c_wakeup(uint8_t *response)
  * \param[out] response pointer to Wake-up response buffer
  * \return status of the operation
  */
-uint8_t sha204c_resync(uint8_t size, uint8_t *response)
+uint8_t sha204c_resync(int fd,uint8_t size, uint8_t *response)
 {
 	// Try to re-synchronize without sending a Wake token
 	// (step 1 of the re-synchronization process).
-	uint8_t ret_code = sha204p_resync(size, response);
+	uint8_t ret_code = sha204p_resync(fd,size, response);
 	if (ret_code == SHA204_SUCCESS)
 		return ret_code;
 
 	// We lost communication. Send a Wake pulse and try
 	// to receive a response (steps 2 and 3 of the
 	// re-synchronization process).
-	(void) sha204p_sleep();
-	ret_code = sha204c_wakeup(response);
+	(void) sha204p_sleep(fd);
+	ret_code = sha204c_wakeup(fd,response);
 
 	// Translate a return value of success into one
 	// that indicates that the device had to be woken up
@@ -183,7 +183,7 @@ uint8_t sha204c_resync(uint8_t size, uint8_t *response)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204c_send_and_receive(struct sha204_send_and_receive_parameters *args)
+uint8_t sha204c_send_and_receive(int fd,struct sha204_send_and_receive_parameters *args)
 {
 	uint8_t ret_code = SHA204_FUNC_FAIL;
 	uint8_t ret_code_resync;
@@ -203,9 +203,9 @@ uint8_t sha204c_send_and_receive(struct sha204_send_and_receive_parameters *args
 	while ((n_retries_send-- > 0) && (ret_code != SHA204_SUCCESS)) {
 
 		// Send command.
-		ret_code = sha204p_send_command(count, args->tx_buffer);
+		ret_code = sha204p_send_command(fd,count, args->tx_buffer);
 		if (ret_code != SHA204_SUCCESS) {
-			if (sha204c_resync(args->rx_size, args->rx_buffer) == SHA204_RX_NO_RESPONSE)
+			if (sha204c_resync(fd,args->rx_size, args->rx_buffer) == SHA204_RX_NO_RESPONSE)
 				// The device seems to be dead in the water.
 				return ret_code;
 			else
@@ -214,7 +214,7 @@ uint8_t sha204c_send_and_receive(struct sha204_send_and_receive_parameters *args
 
 		// Wait typical command execution time and then start polling for a response.
 		//sha204h_delay_ms(args->poll_delay);
-		delay_ms(args->poll_delay);
+		usleep(args->poll_delay * 1000);
 
 		// Retry loop for receiving a response.
 		n_retries_receive = SHA204_RETRY_COUNT + 1;
@@ -226,13 +226,13 @@ uint8_t sha204c_send_and_receive(struct sha204_send_and_receive_parameters *args
 
 //			sha204h_start_timeout_timer_ms(args->poll_timeout);
 			do {
-				ret_code = sha204p_receive_response(args->rx_size, args->rx_buffer);
+				ret_code = sha204p_receive_response(fd, args->rx_size, args->rx_buffer);
 			} while ((ret_code == SHA204_RX_NO_RESPONSE));
 //		} while (!sha204_timer_expired && (ret_code == SHA204_RX_NO_RESPONSE));
 
 			if (ret_code == SHA204_RX_NO_RESPONSE) {
 				// We did not receive a response. Re-synchronize and send command again.
-				if (sha204c_resync(args->rx_size, args->rx_buffer) == SHA204_RX_NO_RESPONSE)
+				if (sha204c_resync(fd,args->rx_size, args->rx_buffer) == SHA204_RX_NO_RESPONSE)
 					// The device seems to be dead in the water.
 					return ret_code;
 				else
@@ -242,7 +242,7 @@ uint8_t sha204c_send_and_receive(struct sha204_send_and_receive_parameters *args
 			// Check whether we received a valid response.
 			if (ret_code == SHA204_INVALID_SIZE) {
 				// We see 0xFF for the count when communication got out of sync.
-				ret_code_resync = sha204c_resync(args->rx_size, args->rx_buffer);
+				ret_code_resync = sha204c_resync(fd,args->rx_size, args->rx_buffer);
 				if (ret_code_resync == SHA204_SUCCESS)
 					// We did not have to wake up the device. Try receiving response again.
 					continue;
@@ -289,7 +289,7 @@ uint8_t sha204c_send_and_receive(struct sha204_send_and_receive_parameters *args
 
 			else {
 				// Received response with incorrect CRC.
-				ret_code_resync = sha204c_resync(args->rx_size, args->rx_buffer);
+				ret_code_resync = sha204c_resync(fd,args->rx_size, args->rx_buffer);
 				if (ret_code_resync == SHA204_SUCCESS)
 					// We did not have to wake up the device. Try receiving response again.
 					continue;

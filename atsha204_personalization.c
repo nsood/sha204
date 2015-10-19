@@ -7,14 +7,14 @@
 
 #include "atsha204_personalization.h"
 
-void atsha204_personalization() {
+void atsha204_personalization(int fd) {
 	static uint8_t status = SHA204_SUCCESS;
 	static uint8_t config_params[0x04] = {0};
 	static uint8_t slot_content [0x20] = {0};
 	uint8_t i = 0;
 
 	
-	write_lcd(1,"PERSONALIZATION!");
+	printf("PERSONALIZATION!_!\n");
 
 
 	// **** EXERCISE: SLOTS 0 & 1 CONFIGURATION
@@ -44,9 +44,9 @@ void atsha204_personalization() {
 	cmd_args.tx_buffer = global_tx_buffer;
 	cmd_args.rx_size = 0x10;
 	cmd_args.rx_buffer = global_rx_buffer;
-	sha204m_execute(&cmd_args);
-	sha204p_sleep(); 
-	if(status != SHA204_SUCCESS) { write_lcd(2,"FAILED!"); return; }
+	sha204m_execute(fd,&cmd_args);
+	sha204p_sleep(fd); 
+	if(status != SHA204_SUCCESS) {printf("FAILED! p_2\n"); return; }
 	
 	
 
@@ -77,9 +77,9 @@ void atsha204_personalization() {
 	cmd_args.tx_buffer = global_tx_buffer;
 	cmd_args.rx_size = 0x10;
 	cmd_args.rx_buffer = global_rx_buffer;
-	sha204m_execute(&cmd_args);
-	sha204p_sleep(); 
-	if(status != SHA204_SUCCESS) { write_lcd(2,"FAILED!"); return; }
+	sha204m_execute(fd,&cmd_args);
+	sha204p_sleep(fd); 
+	if(status != SHA204_SUCCESS) { printf("FAILED! p_2\n"); return; }
 	
 	
 	// **** LOCK THE CONFIGURATION ZONE.  
@@ -98,9 +98,9 @@ void atsha204_personalization() {
 	cmd_args.tx_buffer = global_tx_buffer;
 	cmd_args.rx_size = 0x10;
 	cmd_args.rx_buffer = global_rx_buffer;
-	sha204m_execute(&cmd_args);
-	sha204p_sleep(); 	
-	if(status != SHA204_SUCCESS) { write_lcd(2,"FAILED!"); return; }
+	sha204m_execute(fd,&cmd_args);
+	sha204p_sleep(fd); 	
+	if(status != SHA204_SUCCESS) {printf("FAILED p_2!\n"); return; }
 	
 	
 	
@@ -123,9 +123,9 @@ void atsha204_personalization() {
 	cmd_args.tx_buffer = global_tx_buffer;
 	cmd_args.rx_size = 0x10;
 	cmd_args.rx_buffer = global_rx_buffer;
-	sha204m_execute(&cmd_args);
-	sha204p_sleep();
-	if(status != SHA204_SUCCESS) { write_lcd(2,"FAILED!"); return; }
+	sha204m_execute(fd,&cmd_args);
+	sha204p_sleep(fd);
+	if(status != SHA204_SUCCESS) { printf("FAILED! p_2\n"); return; }
 	
 
 
@@ -146,9 +146,9 @@ void atsha204_personalization() {
 	cmd_args.tx_buffer = global_tx_buffer;
 	cmd_args.rx_size = 0x10;
 	cmd_args.rx_buffer = global_rx_buffer;
-	sha204m_execute(&cmd_args);
-	sha204p_sleep();
-	if(status != SHA204_SUCCESS) { write_lcd(2,"FAILED!"); return; }
+	sha204m_execute(fd,&cmd_args);
+	sha204p_sleep(fd);
+	if(status != SHA204_SUCCESS) { printf("FAILED! p_2\n"); return; }
 	
 
 
@@ -168,9 +168,9 @@ void atsha204_personalization() {
 	cmd_args.tx_buffer = global_tx_buffer;
 	cmd_args.rx_size = 0x10;
 	cmd_args.rx_buffer = global_rx_buffer;
-	status = sha204m_execute(&cmd_args);
-	sha204p_sleep();
-	if(status != SHA204_SUCCESS) { write_lcd(2,"FAILED!"); return; }
+	status = sha204m_execute(fd,&cmd_args);
+	sha204p_sleep(fd);
+	if(status != SHA204_SUCCESS) { printf("FAILED! p_2\n"); return; }
 	
  	// Verify Complete Lock By Inspecting the LOCK CONFIG and LOCK VALUE registers 
 	// Perform the configuration lock:
@@ -187,17 +187,17 @@ void atsha204_personalization() {
 	cmd_args.tx_buffer = global_tx_buffer;
 	cmd_args.rx_size = 0x10;
 	cmd_args.rx_buffer = global_rx_buffer;
-	status = sha204m_execute(&cmd_args);
-	sha204p_sleep();
-	if(status != SHA204_SUCCESS) { write_lcd(2,"FAILED!"); return; }
+	status = sha204m_execute(fd,&cmd_args);
+	sha204p_sleep(fd);
+	if(status != SHA204_SUCCESS) { printf("FAILED! p_2\n"); return; }
 		
 		
 
 
 		
-	if((global_rx_buffer[0x03] != 0x00) || (global_rx_buffer[0x04] != 00)) { write_lcd(2,"FAILED!"); return; }
+	if((global_rx_buffer[0x03] != 0x00) || (global_rx_buffer[0x04] != 00)) { printf("FAILED! p_2\n"); return; }
 	
-	write_lcd(2,"SUCCESSFUL!");
+	printf("SUCCESSFUL! p_2\n");
 	 
 	 
 	return;

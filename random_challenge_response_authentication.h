@@ -8,8 +8,11 @@
 
 #ifndef RANDOM_CHALLENGE_RESPONSE_AUTHENTICATION_H_
 #define RANDOM_CHALLENGE_RESPONSE_AUTHENTICATION_H_
-
-#include "$safeprojectname$.h"
+#include <stdint.h>
+#include "sha204_lib_return_codes.h"   // declarations of function return codes
+#include "sha204_comm_marshaling.h"
+#include "sha204_helper.h"
+#include "atsha204_ctc_d1_solutions.h"
 
 uint8_t num_in[20] = {
 						0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,

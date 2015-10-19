@@ -9,9 +9,6 @@
 #ifndef ATSHA204_I2C_H_
 #define ATSHA204_I2C_H_
 
-#include "twi_master.h"
-#include "conf_twim.h"
-#include "conf_atsha204.h"
 #include "atsha204_ctc_d1_solutions.h"
 
 // error codes for physical hardware dependent module
@@ -24,18 +21,6 @@
 
 // Upper Layer Compliance Definitions
 #define I2C_CLOCK				ATSHA204_I2C_SPEED
-
-// Function Prototypes
-void i2c_enable(void);
-void i2c_disable(void);
-uint8_t i2c_send_bytes(uint8_t, uint8_t*);
-uint8_t i2c_receive_byte(uint8_t*);
-uint8_t i2c_receive_bytes(uint8_t, uint8_t*); 
-
-// Not needed but defined for compliance with parent layers
-uint8_t i2c_send_start(void);
-uint8_t i2c_send_stop(void);
-
 
 
 #endif /* ATSHA204_I2C_H_ */

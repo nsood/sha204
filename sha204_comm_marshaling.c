@@ -50,7 +50,7 @@
  * \param[in, out] args pointer to parameter structure
  * \return status of the operation
  */
-static uint8_t sha204m_check_parameters(struct sha204_command_parameters *args)
+static uint8_t sha204m_check_parameters(int fd,struct sha204_command_parameters *args)
 {
 #ifdef SHA204_CHECK_PARAMETERS
 
@@ -155,7 +155,7 @@ static uint8_t sha204m_check_parameters(struct sha204_command_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_execute(struct sha204_command_parameters *args)
+uint8_t sha204m_execute(int fd, struct sha204_command_parameters *args)
 {
 	uint8_t *p_buffer;
 	uint8_t len;
@@ -164,7 +164,7 @@ uint8_t sha204m_execute(struct sha204_command_parameters *args)
 		.rx_buffer = args->rx_buffer
 	};
 
-	uint8_t ret_code = sha204m_check_parameters(args);
+	uint8_t ret_code = sha204m_check_parameters(fd,args);
 	if (ret_code != SHA204_SUCCESS)
 		return ret_code;
 
@@ -281,7 +281,7 @@ uint8_t sha204m_execute(struct sha204_command_parameters *args)
 	sha204c_calculate_crc(len - SHA204_CRC_SIZE, args->tx_buffer, p_buffer);
 
 	// Send command and receive response.
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -289,7 +289,7 @@ uint8_t sha204m_execute(struct sha204_command_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_check_mac(struct sha204_check_mac_parameters *args)
+uint8_t sha204m_check_mac(int fd, struct sha204_check_mac_parameters *args)
 {
 	if (		// no null pointers allowed
 				!args->tx_buffer || !args->rx_buffer || !args->client_response || !args->other_data
@@ -319,7 +319,7 @@ uint8_t sha204m_check_mac(struct sha204_check_mac_parameters *args)
 		.poll_delay = CHECKMAC_DELAY,
 		.poll_timeout = CHECKMAC_EXEC_MAX - CHECKMAC_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd, &comm_parameters);
 }
 
 
@@ -327,7 +327,7 @@ uint8_t sha204m_check_mac(struct sha204_check_mac_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_derive_key(struct sha204_derive_key_parameters *args)
+uint8_t sha204m_derive_key(int fd, struct sha204_derive_key_parameters *args)
 {
 	if (!args->tx_buffer || !args->rx_buffer || ((args->use_random & ~DERIVE_KEY_RANDOM_FLAG) != 0)
 				 || (args->target_key > SHA204_KEY_ID_MAX))
@@ -352,7 +352,7 @@ uint8_t sha204m_derive_key(struct sha204_derive_key_parameters *args)
 		.poll_delay = DERIVE_KEY_DELAY,
 		.poll_timeout = DERIVE_KEY_EXEC_MAX - DERIVE_KEY_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -360,7 +360,7 @@ uint8_t sha204m_derive_key(struct sha204_derive_key_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_dev_rev(struct sha204_dev_rev_parameters *args)
+uint8_t sha204m_dev_rev(int fd, struct sha204_dev_rev_parameters *args)
 {
 	if (!args->tx_buffer || !args->rx_buffer)
 		return SHA204_BAD_PARAM;
@@ -380,7 +380,7 @@ uint8_t sha204m_dev_rev(struct sha204_dev_rev_parameters *args)
 		.poll_delay = DEVREV_DELAY,
 		.poll_timeout = DEVREV_EXEC_MAX - DEVREV_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -388,7 +388,7 @@ uint8_t sha204m_dev_rev(struct sha204_dev_rev_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_gen_dig(struct sha204_gen_dig_parameters *args)
+uint8_t sha204m_gen_dig(int fd, struct sha204_gen_dig_parameters *args)
 {
 	if (!args->tx_buffer || !args->rx_buffer
 				|| ((args->zone != GENDIG_ZONE_OTP) && (args->zone != GENDIG_ZONE_DATA)))
@@ -417,7 +417,7 @@ uint8_t sha204m_gen_dig(struct sha204_gen_dig_parameters *args)
 		.poll_delay = GENDIG_DELAY,
 		.poll_timeout = GENDIG_EXEC_MAX - GENDIG_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd, &comm_parameters);
 }
 
 
@@ -425,7 +425,7 @@ uint8_t sha204m_gen_dig(struct sha204_gen_dig_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_hmac(struct sha204_hmac_parameters *args)
+uint8_t sha204m_hmac(int fd, struct sha204_hmac_parameters *args)
 {
 	if (!args->tx_buffer || !args->rx_buffer || ((args->mode & ~HMAC_MODE_MASK) != 0))
 		return SHA204_BAD_PARAM;
@@ -446,7 +446,7 @@ uint8_t sha204m_hmac(struct sha204_hmac_parameters *args)
 		.poll_delay = HMAC_DELAY,
 		.poll_timeout = HMAC_EXEC_MAX - HMAC_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd, &comm_parameters);
 }
 
 
@@ -454,7 +454,7 @@ uint8_t sha204m_hmac(struct sha204_hmac_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_lock(struct sha204_lock_parameters *args)
+uint8_t sha204m_lock(int fd, struct sha204_lock_parameters *args)
 {
 	if (!args->tx_buffer || !args->rx_buffer || ((args->zone & ~LOCK_ZONE_MASK) != 0)
 				|| ((args->zone & LOCK_ZONE_NO_CRC) && (args->summary != 0)))
@@ -473,7 +473,7 @@ uint8_t sha204m_lock(struct sha204_lock_parameters *args)
 		.poll_delay = LOCK_DELAY,
 		.poll_timeout = LOCK_EXEC_MAX - LOCK_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -481,7 +481,7 @@ uint8_t sha204m_lock(struct sha204_lock_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_mac(struct sha204_mac_parameters *args)
+uint8_t sha204m_mac(int fd,struct sha204_mac_parameters *args)
 {
 	if (!args->tx_buffer || !args->rx_buffer || ((args->mode & ~MAC_MODE_MASK) != 0)
 				|| (((args->mode & MAC_MODE_BLOCK2_TEMPKEY) == 0) && !args->challenge))
@@ -505,7 +505,7 @@ uint8_t sha204m_mac(struct sha204_mac_parameters *args)
 		.poll_delay = MAC_DELAY,
 		.poll_timeout = MAC_EXEC_MAX - MAC_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -513,7 +513,7 @@ uint8_t sha204m_mac(struct sha204_mac_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_nonce(struct sha204_nonce_parameters *args)
+uint8_t sha204m_nonce(int fd,struct sha204_nonce_parameters *args)
 {
 	uint8_t rx_size;
 
@@ -548,7 +548,7 @@ uint8_t sha204m_nonce(struct sha204_nonce_parameters *args)
 		.poll_delay = NONCE_DELAY,
 		.poll_timeout = NONCE_EXEC_MAX - NONCE_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -557,7 +557,7 @@ uint8_t sha204m_nonce(struct sha204_nonce_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_pause(struct sha204_pause_parameters *args)
+uint8_t sha204m_pause(int fd,struct sha204_pause_parameters *args)
 {
 	if (!args->tx_buffer || !args->rx_buffer)
 		return SHA204_BAD_PARAM;
@@ -577,7 +577,7 @@ uint8_t sha204m_pause(struct sha204_pause_parameters *args)
 		.poll_delay = PAUSE_DELAY,
 		.poll_timeout = PAUSE_EXEC_MAX - PAUSE_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -585,7 +585,7 @@ uint8_t sha204m_pause(struct sha204_pause_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_random(struct sha204_random_parameters *args)
+uint8_t sha204m_random(int fd,struct sha204_random_parameters *args)
 {
 	if (!args->tx_buffer || !args->rx_buffer || (args->mode > RANDOM_NO_SEED_UPDATE))
 		return SHA204_BAD_PARAM;
@@ -605,7 +605,7 @@ uint8_t sha204m_random(struct sha204_random_parameters *args)
 		.poll_delay = RANDOM_DELAY,
 		.poll_timeout = RANDOM_EXEC_MAX - RANDOM_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -613,7 +613,7 @@ uint8_t sha204m_random(struct sha204_random_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_read(struct sha204_read_parameters *args)
+uint8_t sha204m_read(int fd,struct sha204_read_parameters *args)
 {
 	uint8_t rx_size;
 	uint16_t address;
@@ -651,7 +651,7 @@ uint8_t sha204m_read(struct sha204_read_parameters *args)
 		.poll_delay = READ_DELAY,
 		.poll_timeout = READ_EXEC_MAX - READ_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -659,7 +659,7 @@ uint8_t sha204m_read(struct sha204_read_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_update_extra(struct sha204_update_extra_parameters *args)
+uint8_t sha204m_update_extra(int fd,struct sha204_update_extra_parameters *args)
 {
 	if (!args->tx_buffer || !args->rx_buffer || (args->mode > UPDATE_CONFIG_BYTE_86))
 		return SHA204_BAD_PARAM;
@@ -677,7 +677,7 @@ uint8_t sha204m_update_extra(struct sha204_update_extra_parameters *args)
 		.poll_delay = UPDATE_DELAY,
 		.poll_timeout = UPDATE_EXEC_MAX - UPDATE_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
 
 
@@ -685,7 +685,7 @@ uint8_t sha204m_update_extra(struct sha204_update_extra_parameters *args)
  * \param[in, out]  args pointer to parameter structure
  * \return status of the operation
  */
-uint8_t sha204m_write(struct sha204_write_parameters *args)
+uint8_t sha204m_write(int fd,struct sha204_write_parameters *args)
 {
 	uint8_t *p_command;
 	uint8_t count;
@@ -740,5 +740,5 @@ uint8_t sha204m_write(struct sha204_write_parameters *args)
 		.poll_delay = WRITE_DELAY,
 		.poll_timeout = WRITE_EXEC_MAX - WRITE_DELAY
 	};
-	return sha204c_send_and_receive(&comm_parameters);
+	return sha204c_send_and_receive(fd,&comm_parameters);
 }
