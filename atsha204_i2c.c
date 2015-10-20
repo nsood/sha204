@@ -31,10 +31,10 @@ uint8_t sha204p_wakeup(int fd)
 static uint8_t sha204p_send(int fd, uint8_t word_address, uint8_t count, uint8_t *buffer)
 {
 	int ret;
-	unsigned char *array = malloc(count+1);
+	unsigned char *array = malloc((count+1)*sizeof(unsigned char));
 
 	array[0] = word_address;
-	memcpy(&array[1],buffer,count);
+	memcpy(array+1,buffer,count);
 
 	ret = write(fd,array,count+1);
 	free(array);
@@ -73,11 +73,11 @@ uint8_t sha204p_receive_response(int fd, uint8_t size, uint8_t *response)
 	unsigned char *array;
 
 	read(fd,array,1);
-	count =	array[0];
+	count = array[0];
 	if ((count < SHA204_RSP_SIZE_MIN) || (count > SHA204_RSP_SIZE_MAX))
 		return SHA204_INVALID_SIZE;
 
-	array = malloc(count);
+	array = malloc(count*sizeof(unsigned char));
 
 	ret = read(fd,array+1,count-1);
 	if (ret != count-1)
