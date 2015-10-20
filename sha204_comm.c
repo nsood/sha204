@@ -161,7 +161,9 @@ uint8_t sha204c_resync(int fd,uint8_t size, uint8_t *response)
 	// We lost communication. Send a Wake pulse and try
 	// to receive a response (steps 2 and 3 of the
 	// re-synchronization process).
+
 	(void) sha204p_sleep(fd);
+
 	ret_code = sha204c_wakeup(fd,response);
 
 	// Translate a return value of success into one

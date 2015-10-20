@@ -46,7 +46,7 @@ void atsha204_personalization(int fd) {
 	cmd_args.rx_buffer = global_rx_buffer;
 	sha204m_execute(fd,&cmd_args);
 	sha204p_sleep(fd); 
-	if(status != SHA204_SUCCESS) {printf("FAILED! p_2\n"); return; }
+	if(status != SHA204_SUCCESS) {printf("FAILED! p_1\n"); return; }
 	
 	
 
@@ -100,7 +100,7 @@ void atsha204_personalization(int fd) {
 	cmd_args.rx_buffer = global_rx_buffer;
 	sha204m_execute(fd,&cmd_args);
 	sha204p_sleep(fd); 	
-	if(status != SHA204_SUCCESS) {printf("FAILED p_2!\n"); return; }
+	if(status != SHA204_SUCCESS) {printf("FAILED p_3!\n"); return; }
 	
 	
 	
@@ -125,7 +125,7 @@ void atsha204_personalization(int fd) {
 	cmd_args.rx_buffer = global_rx_buffer;
 	sha204m_execute(fd,&cmd_args);
 	sha204p_sleep(fd);
-	if(status != SHA204_SUCCESS) { printf("FAILED! p_2\n"); return; }
+	if(status != SHA204_SUCCESS) { printf("FAILED! p_4\n"); return; }
 	
 
 
@@ -148,7 +148,7 @@ void atsha204_personalization(int fd) {
 	cmd_args.rx_buffer = global_rx_buffer;
 	sha204m_execute(fd,&cmd_args);
 	sha204p_sleep(fd);
-	if(status != SHA204_SUCCESS) { printf("FAILED! p_2\n"); return; }
+	if(status != SHA204_SUCCESS) { printf("FAILED! p_5\n"); return; }
 	
 
 
@@ -170,7 +170,7 @@ void atsha204_personalization(int fd) {
 	cmd_args.rx_buffer = global_rx_buffer;
 	status = sha204m_execute(fd,&cmd_args);
 	sha204p_sleep(fd);
-	if(status != SHA204_SUCCESS) { printf("FAILED! p_2\n"); return; }
+	if(status != SHA204_SUCCESS) { printf("FAILED! p_6\n"); return; }
 	
  	// Verify Complete Lock By Inspecting the LOCK CONFIG and LOCK VALUE registers 
 	// Perform the configuration lock:
@@ -189,15 +189,15 @@ void atsha204_personalization(int fd) {
 	cmd_args.rx_buffer = global_rx_buffer;
 	status = sha204m_execute(fd,&cmd_args);
 	sha204p_sleep(fd);
-	if(status != SHA204_SUCCESS) { printf("FAILED! p_2\n"); return; }
+	if(status != SHA204_SUCCESS) { printf("FAILED! p_7\n"); return; }
 		
 		
 
 
 		
-	if((global_rx_buffer[0x03] != 0x00) || (global_rx_buffer[0x04] != 00)) { printf("FAILED! p_2\n"); return; }
+	if((global_rx_buffer[0x03] != 0x00) || (global_rx_buffer[0x04] != 00)) { printf("FAILED! p_8\n"); return; }
 	
-	printf("SUCCESSFUL! p_2\n");
+	printf("SUCCESSFUL! p_00\n");
 	 
 	 
 	return;

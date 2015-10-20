@@ -13,6 +13,7 @@
 int main(int argc,char* argv[])
 {
 	int fd;
+
 	if ((fd = open(I2C_BUS, O_RDWR)) < 0) {
 		printf("Unable to open i2c control file");
 		exit(1);
@@ -21,10 +22,10 @@ int main(int argc,char* argv[])
 	if (ioctl(fd, I2C_SLAVE, ATSHA204_ADDR) < 0) {
 		printf("Set chip address failed\n");
 	}
+	
+	//atsha204_DevRev_cmd(fd);
 
-	 // atsha204_DevRev_cmd(fd);
-
-	 // atsha204_personalization(fd);
+	//atsha204_personalization(fd);
 
 	random_challenge_response_authentication(fd);
 

@@ -1,5 +1,5 @@
-CC = arm-linux-gnueabihf-gcc-4.7.3
-INC = -I/home/jli/acorn-net/jingling/linux-devkit/sysroots/i686-arago-linux/usr/lib/gcc/arm-linux-gnueabihf/4.7.3/include
+#CC = arm-linux-gnueabihf-gcc-4.7.3
+INC = $(CFLAGS)
 
 crypto : atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o
 	$(CC) -o crypto atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o

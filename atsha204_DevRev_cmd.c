@@ -45,9 +45,9 @@ void atsha204_DevRev_cmd(int fd){
 	if( status == SHA204_SUCCESS ) {
 		if( memcmp(&global_rx_buffer[1],ATSHA204_DEVREV_VALUE,0x04)) { printf("FAILED! d_2\n"); return; }
 	}	
-	else { printf("FAILED! d_2\n"); return; }
+	else { printf("FAILED! d_3\n"); return; }
 		
-	printf("SUCCESS! d_2\n");
+	printf("SUCCESS! d_00\n");
 		
 	return;
 }
