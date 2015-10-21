@@ -22,8 +22,7 @@ uint8_t sha204p_wakeup(int fd)
 	unsigned char wakeup = 0;
 	int ret = write(fd,&wakeup,1);
 	if(ret != 1)
-		printf(">>>sha204p_wakeup	:	%d\n",ret);	
-	//sha204h_delay_ms(SHA204_WAKEUP_DELAY);
+	//	printf(">>>sha204p_wakeup	:	%d\n",ret);	
 	usleep(SHA204_WAKEUP_DELAY * 1000);
 
 	return ;
@@ -35,23 +34,26 @@ static uint8_t sha204p_send(int fd, uint8_t word_address, uint8_t count, uint8_t
 	unsigned char *r;
 	unsigned char *array = (unsigned char*)malloc((count+1)*sizeof(unsigned char));
 
-	printf("\n>>>sha204p_send		:word_addr :%d count :%d\n",word_address,count);
+	printf("\n>>>sha204p_send		:word_addr :%d count :%d\n",word_address,count);		
+
+	if(i == count && i != 0)
+		printf("\n");
 
 	array[0] = word_address;
 	memcpy(array+1,buffer,count);
 
 	ret = write(fd,array,count+1);
 	printf("   >>>send_write	:count :%d\n",ret);
-
-	if(ret > 1)
-	{
-		r = buffer;
-		for(i=0;i<ret;++i,r++) 		
-			printf("%x ",*r);
+	
+	r = buffer;
+	for(i=0;i<count;++i,r++) {
+		printf("%3x",*r);
+		if(i%10 ==9)
+			printf("\n");					
 	}
-
+	
 	free(array);
-	return (ret>0) ?  SHA204_SUCCESS : ret;
+	return (ret == count+1) ?  SHA204_SUCCESS : ret;
 }
 
 
@@ -89,17 +91,22 @@ uint8_t sha204p_receive_response(int fd, uint8_t size, uint8_t *response)
 	read(fd,&response[0],1);
 
 	count = response[0];
-	printf(">>>receive_response	:	%x\n",count);
+	printf("\n>>>receive_response	:	%x\n",count);
 	if ((count < SHA204_RSP_SIZE_MIN) || (count > SHA204_RSP_SIZE_MAX))
 		return SHA204_INVALID_SIZE;
 
 	ret = read(fd,response+1,count-1);
 	if (ret != -1)
 	{
-		printf("   >>>receive_response : %x \n",ret);	
+		printf("   >>>receive_response	:	%x \n",ret);	
 		p = response;
-		for(i=0;i<ret;i++,p++)
-			printf("%x ",*p);
+		for(i=0;i<ret;i++,p++){
+			printf("%3x",*p);
+			if(i%10 ==9)
+				printf("\n");					
+		}
+		if(i == ret)
+			printf("\n");
 	}
 
 	return (ret>0) ?  SHA204_SUCCESS : ret;

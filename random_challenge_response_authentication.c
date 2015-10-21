@@ -17,6 +17,8 @@ void random_challenge_response_authentication(int fd) {
 	struct sha204h_mac_in_out mac_param;			// Parameter for mac helper function
 	struct sha204h_temp_key computed_tempkey;		// TempKey parameter for nonce and mac helper function
 
+	//add by jli :before every execute cmd send to ATSHA204 chip  should have waked it up once!
+	sha204p_wakeup(fd);
 	
 	printf("Random Chal_Response r_1\n");
 	
@@ -133,9 +135,9 @@ void random_challenge_response_authentication(int fd) {
 	// Moment of truth: Compare the received response with the dynamically computed expected response.
 	status = memcmp(computed_response,atsha204_response,0x20);
 	if ( !status ) {	
-		printf("SUCCESS!_r00\n");
+		printf("SUCCESS!^_^\n");
 	} else {
-		 printf("FAILED! (4)_r6\n"); 
+		 printf("FAILED! (4)r_6\n"); 
 		 return; 
 	}
 	
