@@ -273,13 +273,5 @@ struct sha204h_decrypt_in_out {
 //---------------------
 uint8_t sha204h_nonce(struct sha204h_nonce_in_out param);
 uint8_t sha204h_mac(struct sha204h_mac_in_out param);
-uint8_t sha204h_hmac(struct sha204h_hmac_in_out param);
-uint8_t sha204h_gen_dig(struct sha204h_gen_dig_in_out param);
-uint8_t sha204h_derive_key(struct sha204h_derive_key_in_out param);
-uint8_t sha204h_derive_key_mac(struct sha204h_derive_key_mac_in_out param);
-uint8_t sha204h_encrypt(struct sha204h_encrypt_in_out param);
-uint8_t sha204h_decrypt(struct sha204h_decrypt_in_out param);
-void sha204h_calculate_crc_chain(uint8_t length, uint8_t *data, uint8_t *crc);
-
 
 #endif //SHA204_HELPER_H

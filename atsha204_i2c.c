@@ -73,14 +73,6 @@ uint8_t sha204p_sleep(int fd)
 	return sha204p_send(fd, SHA204_I2C_PACKET_FUNCTION_SLEEP, 0, NULL);
 }
 
-
-
-uint8_t sha204p_reset_io(int fd)
-{
-	return sha204p_send(fd, SHA204_I2C_PACKET_FUNCTION_RESET, 0, NULL);
-}
-
-
 uint8_t sha204p_receive_response(int fd, uint8_t size, uint8_t *response)
 {
 	int ret,i;
