@@ -17,7 +17,7 @@ void random_challenge_response_authentication(int fd) {
 	struct sha204h_mac_in_out mac_param;			// Parameter for mac helper function
 	struct sha204h_temp_key computed_tempkey;		// TempKey parameter for nonce and mac helper function
 
-	//add by jli :before every execute cmd send to ATSHA204 chip  should have waked it up once!
+	//add by jli :That before every executing  cmd sent to ATSHA204 chip  should have waked it up once!
 	sha204p_wakeup(fd);
 	
 	printf("Random Chal_Response r_1\n");

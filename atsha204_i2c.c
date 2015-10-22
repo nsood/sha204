@@ -48,8 +48,7 @@ static uint8_t sha204p_send(int fd, uint8_t word_address, uint8_t count, uint8_t
 	r = buffer;
 	for(i=0;i<count;++i,r++) {
 		printf("%3x",*r);
-		if(i%10 ==9)
-			printf("\n");					
+		if(i%10 ==9) printf("\n");					
 	}
 	
 	free(array);
@@ -99,14 +98,12 @@ uint8_t sha204p_receive_response(int fd, uint8_t size, uint8_t *response)
 	if (ret != -1)
 	{
 		printf("   >>>receive_response	:	%x \n",ret);	
-		p = response;
+		p = response+1;
 		for(i=0;i<ret;i++,p++){
 			printf("%3x",*p);
-			if(i%10 ==9)
-				printf("\n");					
+			if(i%10 ==9) printf("\n");					
 		}
-		if(i == ret)
-			printf("\n");
+		if(i == ret) printf("\n");
 	}
 
 	return (ret>0) ?  SHA204_SUCCESS : ret;
@@ -114,6 +111,7 @@ uint8_t sha204p_receive_response(int fd, uint8_t size, uint8_t *response)
 
 uint8_t sha204p_resync(int fd, uint8_t size, uint8_t *response)
 {
-	
+	usleep(100*1000);
+	return  SHA204_SUCCESS;
 }
 
