@@ -518,13 +518,6 @@ struct sha204_command_parameters {
 	uint8_t tx_size;      //!< size of supplied send buffer
 	uint8_t rx_size;      //!< size of supplied receive buffer
 };
-	
-/**
- * \defgroup sha204_command_marshaling_group SHA204 Service - command marshaling functions
- *
- * @{
- */
-uint8_t sha204m_execute(int fd,struct sha204_command_parameters *args);
-//! @}
+
 
 #endif

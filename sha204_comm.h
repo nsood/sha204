@@ -48,9 +48,4 @@ struct sha204_send_and_receive_parameters {
  * \defgroup sha204_communication_group SHA204 Service - hardware independent communication functions
  * @{
  */
-void sha204c_calculate_crc(uint8_t length, uint8_t *data, uint8_t *crc);
-uint8_t sha204c_wakeup(int fd,uint8_t *response);
-uint8_t sha204c_send_and_receive(int fd,struct sha204_send_and_receive_parameters *args);
-//! @}
-
 #endif

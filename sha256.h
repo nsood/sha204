@@ -25,10 +25,6 @@ typedef struct {
     uint32 h[8];
 } sha256_ctx;
 
-void sha256_init(sha256_ctx * ctx);
-void sha256_update(sha256_ctx *ctx, const uint8 *message, uint32 len);
-void sha256_final(sha256_ctx *ctx, uint8 *digest);
-void sha256(const uint8 *message, uint32 len, uint8 *digest);
 
 #ifdef __cplusplus
 }

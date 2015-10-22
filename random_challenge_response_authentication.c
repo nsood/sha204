@@ -1,10 +1,3 @@
-/*
- * random_challenge_response_authentication.c
- *
- * Created: 10/9/2013 9:15:46 PM
- *  Author: easanghanwa
- */ 
-
 #include "random_challenge_response_authentication.h"
 
 void random_challenge_response_authentication(int fd) {
@@ -22,38 +15,6 @@ void random_challenge_response_authentication(int fd) {
 	
 	printf("Random Chal_Response r_1\n");
 	
-	// Notes: 
-	// 1.	Random Challenge-Response involves the use of a random
-	//		challenge for EVERY authentication process. A host with a good
-	//		source of random number generation can simply ensure the challenge
-	//		is random while making a simple MAC command call.  
-	//
-	// 2.	A host without a good random generator may be tempted to use the
-	//		ATSHA204 random command to obtain a random number from the device.
-	//		While the random number obtained through this process is of the 
-	//		highest quality, the process is susceptible to man-in-the-middle
-	//		attack, whereby the attacker simply intercepts the random number
-	//		and sent the host a non-random number.
-	//
-	// 3.	Host systems without good random number generators and wanting to
-	//		avoid the susceptibility to man-in-the-middle attack described in
-	//		note #2 above can use the authentication process involving the
-	//		ATSHA204 NONCE command in Random Mode.  The NONCE command guarantees
-	//		an internal random state within the ATSHA204 device that is virtually
-	//		impossible to fake.  This is the process exemplified in this exercise.
-	
-	
-	// *** STEP 1:	ISSUE A NONCE WITH NO EEPROM SEED UPDATE ***
-	// 
-	//				The NONCE command generates an internal random state
-	//				in the ATSHA204 device. Note that the actual random NONCE is 
-	//				a value computed using an internally generated random number
-	//				and other device parameters.  The NONCE command emits this
-	//				random value for the host to use for host side computation of
-	//				an equivalent NONCE.  Capture this random number and keep for
-	//				use with computing the equivalent NONCE on the host side.
-	
-	// Issue the NONCE command
 	cmd_args.op_code = SHA204_NONCE;
 	cmd_args.param_1 = NONCE_MODE_NO_SEED_UPDATE;
 	cmd_args.param_2 = NONCE_PARAM2;

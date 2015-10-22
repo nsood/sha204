@@ -271,7 +271,5 @@ struct sha204h_decrypt_in_out {
 //---------------------
 // Function prototypes
 //---------------------
-uint8_t sha204h_nonce(struct sha204h_nonce_in_out param);
-uint8_t sha204h_mac(struct sha204h_mac_in_out param);
 
 #endif //SHA204_HELPER_H
