@@ -4,10 +4,14 @@
  * Created: 7/10/2013 1:56:24 PM
  *  Author: easanghanwa
  */ 
+#include <common.h>
+#include <command.h>
 
-#include "atsha204_uboot.h"
+#include <i2c.h>
+#include <malloc.h>
 
-#define I2C_BUS       "/dev/i2c-0"
+#include "sha204.h"
+
 #define ATSHA204_ADDR  0x64
 
 enum i2c_word_address {
@@ -235,7 +239,7 @@ void sha256_init(sha256_ctx *ctx)
     ctx->tot_len = 0;
 }
 
-void sha256_update(sha256_ctx *ctx, const uint8 *message,
+void sha256_Update(sha256_ctx *ctx, const uint8 *message,
                    uint32 len)
 {
     uint32 block_nb;
@@ -312,7 +316,7 @@ void sha256(const uint8 *message, uint32 len, uint8 *digest)
     sha256_ctx ctx;
 
     sha256_init(&ctx);
-    sha256_update(&ctx, message, len);
+    sha256_Update(&ctx, message, len);
     sha256_final(&ctx, digest);
 }
 
@@ -430,13 +434,13 @@ uint8_t sha204h_mac(struct sha204h_mac_in_out param)
 	return SHA204_SUCCESS;
 }
 
-uint8_t sha204p_wakeup(int fd)
+void sha204p_wakeup(unsigned char chip)
 {
 	unsigned char wakeup = 0;
-	int ret = write(fd,&wakeup,1);
+	int ret = i2c_write(0,0,0,&wakeup,1);
 	if(ret != 1)
-	//	printf(">>>sha204p_wakeup	:	%d\n",ret);	
-	usleep(SHA204_WAKEUP_DELAY * 1000);
+		printf(">>>sha204p_wakeup	:	%d\n",ret);	
+	udelay(SHA204_WAKEUP_DELAY * 1000);
 
 	return ;
 }
@@ -524,9 +528,9 @@ uint8_t sha204c_check_crc(uint8_t *response)
 	return (crc[0] == response[count] && crc[1] == response[count + 1])
 		? SHA204_SUCCESS : SHA204_BAD_CRC;
 }
-static uint8_t sha204p_send(int fd, uint8_t word_address, uint8_t count, uint8_t *buffer)
+static uint8_t sha204p_send(unsigned char chip, uint8_t word_address, uint8_t count, uint8_t *buffer)
 {
-	int ret,i;
+	int ret,i=0;
 	unsigned char *r;
 	unsigned char *array = (unsigned char*)malloc((count+1)*sizeof(unsigned char));
 
@@ -538,7 +542,8 @@ static uint8_t sha204p_send(int fd, uint8_t word_address, uint8_t count, uint8_t
 	array[0] = word_address;
 	memcpy(array+1,buffer,count);
 
-	ret = write(fd,array,count+1);
+	i2c_set_bus_num(0);
+	ret = i2c_write(chip,0,0,array,count+1);
 	printf("   >>>send_write	:count :%d\n",ret);
 	
 	r = buffer;
@@ -553,33 +558,35 @@ static uint8_t sha204p_send(int fd, uint8_t word_address, uint8_t count, uint8_t
 
 
 
-uint8_t sha204p_send_command(int fd,uint8_t count, uint8_t *command)
+uint8_t sha204p_send_command(unsigned char chip,uint8_t count, uint8_t *command)
 {
-	return sha204p_send(fd, SHA204_I2C_PACKET_FUNCTION_NORMAL, count, command);
+	return sha204p_send(chip, SHA204_I2C_PACKET_FUNCTION_NORMAL, count, command);
 }
 
-uint8_t sha204p_idle(int fd)
+uint8_t sha204p_idle(unsigned char chip)
 {
-	return sha204p_send(fd, SHA204_I2C_PACKET_FUNCTION_IDLE, 0, NULL);
+	return sha204p_send(chip, SHA204_I2C_PACKET_FUNCTION_IDLE, 0, NULL);
 }
-uint8_t sha204p_sleep(int fd)
+uint8_t sha204p_sleep(unsigned char chip)
 {
-	return sha204p_send(fd, SHA204_I2C_PACKET_FUNCTION_SLEEP, 0, NULL);
+	return sha204p_send(chip, SHA204_I2C_PACKET_FUNCTION_SLEEP, 0, NULL);
 }
-uint8_t sha204p_receive_response(int fd, uint8_t size, uint8_t *response)
+uint8_t sha204p_receive_response(unsigned char chip, uint8_t size, uint8_t *response)
 {
 	int ret,i;
 	unsigned char count;
 	unsigned char *p;
 
-	read(fd,&response[0],1);
+	i2c_set_bus_num(0);
+	i2c_read(chip,0,0,&response[0],1);
 
 	count = response[0];
 	printf("\n>>>receive_response	:	%x\n",count);
 	if ((count < SHA204_RSP_SIZE_MIN) || (count > SHA204_RSP_SIZE_MAX))
 		return SHA204_INVALID_SIZE;
 
-	ret = read(fd,response+1,count-1);
+	i2c_set_bus_num(0);
+	ret = i2c_read(chip,0,0,response+1,count-1);
 	if (ret != -1)
 	{
 		printf("   >>>receive_response	:	%x \n",ret);	
@@ -594,7 +601,7 @@ uint8_t sha204p_receive_response(int fd, uint8_t size, uint8_t *response)
 	return (ret>0) ?  SHA204_SUCCESS : ret;
 }
 
-uint8_t sha204c_send_and_receive(int fd,struct sha204_send_and_receive_parameters *args)
+uint8_t sha204c_send_and_receive(unsigned char chip,struct sha204_send_and_receive_parameters *args)
 {
 	uint8_t ret_code = SHA204_FUNC_FAIL;
 
@@ -603,10 +610,10 @@ uint8_t sha204c_send_and_receive(int fd,struct sha204_send_and_receive_parameter
 
 	sha204c_calculate_crc(count_minus_crc, args->tx_buffer, args->tx_buffer + count_minus_crc);
 
-	ret_code = sha204p_send_command(fd,count, args->tx_buffer);
-	usleep(args->poll_delay * 1000);
+	ret_code = sha204p_send_command(chip,count, args->tx_buffer);
+	udelay(args->poll_delay * 1000);
 	do {
-		ret_code = sha204p_receive_response(fd, args->rx_size, args->rx_buffer);
+		ret_code = sha204p_receive_response(chip, args->rx_size, args->rx_buffer);
 	} while ((ret_code == SHA204_RX_NO_RESPONSE));
 
 	ret_code = sha204c_check_crc(args->rx_buffer);
@@ -614,7 +621,7 @@ uint8_t sha204c_send_and_receive(int fd,struct sha204_send_and_receive_parameter
 	return ret_code;
 }
 
-uint8_t sha204m_execute(int fd, struct sha204_command_parameters *args)
+uint8_t sha204m_execute(unsigned char chip, struct sha204_command_parameters *args)
 {
 	uint8_t *p_buffer;
 	uint8_t len;
@@ -670,10 +677,12 @@ uint8_t sha204m_execute(int fd, struct sha204_command_parameters *args)
 	sha204c_calculate_crc(len - SHA204_CRC_SIZE, args->tx_buffer, p_buffer);
 
 	// Send command and receive response.
-	return sha204c_send_and_receive(fd,&comm_parameters);
+	return sha204c_send_and_receive(chip,&comm_parameters);
 }
 
-void random_challenge_response_authentication(int fd) {
+void do_random_challenge_response_authentication() {
+
+	unsigned char chip = ATSHA204_ADDR;
 	
 	static uint8_t status = SHA204_SUCCESS;
 	static uint8_t random_number[0x20] = {0};		// Random number returned by Random NONCE command
@@ -684,7 +693,7 @@ void random_challenge_response_authentication(int fd) {
 	struct sha204h_temp_key computed_tempkey;		// TempKey parameter for nonce and mac helper function
 
 	//add by jli :That before every executing  cmd sent to ATSHA204 chip  should have waked it up once!
-	sha204p_wakeup(fd);
+	sha204p_wakeup(chip);
 	
 	printf("Random Chal_Response r_1\n");
 	
@@ -701,8 +710,8 @@ void random_challenge_response_authentication(int fd) {
 	cmd_args.tx_buffer = global_tx_buffer;
 	cmd_args.rx_size = NONCE_RSP_SIZE_LONG;			 
 	cmd_args.rx_buffer = global_rx_buffer;
-	status = sha204m_execute(fd,&cmd_args);
-	sha204p_idle(fd);
+	status = sha204m_execute(chip,&cmd_args);
+	sha204p_idle(chip);
 	if(status != SHA204_SUCCESS) { printf("FAILED! (1)r_2\n"); return; }
 	
 	// Capture the random number from the NONCE command if it were successful
@@ -741,8 +750,8 @@ void random_challenge_response_authentication(int fd) {
 	cmd_args.tx_buffer = global_tx_buffer;
 	cmd_args.rx_size = MAC_RSP_SIZE;
 	cmd_args.rx_buffer = global_rx_buffer;
-	status = sha204m_execute(fd,&cmd_args);
-	sha204p_sleep(fd);
+	status = sha204m_execute(chip,&cmd_args);
+	sha204p_sleep(chip);
 	if(status != SHA204_SUCCESS) { printf("FAILED! (3)r_4\n"); return; }
 	
 	// Capture actual response from the ATSHA204 device
@@ -778,27 +787,35 @@ void random_challenge_response_authentication(int fd) {
 	return;
 }
 
-int main(int argc,char* argv[])
+static cmd_tbl_t cmd_sha204_sub[] = {
+	U_BOOT_CMD_MKENT(rcra, 0, 1, do_random_challenge_response_authentication, "", ""),
+};
+
+static int do_sha204(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 {
-	int fd;
-	
-	if ((fd = open(I2C_BUS, O_RDWR)) < 0) {
-		printf("Unable to open i2c control file");
-		exit(1);
-	}
+	cmd_tbl_t *c;
 
-	if (ioctl(fd, I2C_SLAVE, ATSHA204_ADDR) < 0) {
-		printf("Set chip address failed\n");
-	}
-	
-	//atsha204_DevRev_cmd(fd);
+	if (argc < 2)
+		return CMD_RET_USAGE;
 
-	//atsha204_personalization(fd);
+	/* Strip off leading 'oled' command argument */
+	argc--;
+	argv++;
 
-	random_challenge_response_authentication(fd);
-	close(fd);
-	
-	return 0;
+	c = find_cmd_tbl(argv[0], &cmd_sha204_sub[0], ARRAY_SIZE(cmd_sha204_sub));
+
+	if (c)
+		return c->cmd(cmdtp, flag, argc, argv);
+	else
+		return CMD_RET_USAGE;
 }
 
+static char sha204_help_text[] =
+"sha204 rcra	--sha204 random_challenge_response_authentication\n";
+
+U_BOOT_CMD(
+	sha204, 4, 1, do_sha204,
+	"ATSHA204A",
+	sha204_help_text
+);
 

@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <sys/ioctl.h>
-#include <string.h>
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
+
 
 #define SHA224_DIGEST_SIZE ( 224 / 8)
 #define SHA256_DIGEST_SIZE ( 256 / 8)
