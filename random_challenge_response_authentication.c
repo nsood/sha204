@@ -133,7 +133,7 @@ void random_challenge_response_authentication(int fd) {
 	
 	
 	// Moment of truth: Compare the received response with the dynamically computed expected response.
-	status = memcmp(computed_response,atsha204_response,0x20);
+	memcmp(computed_response,atsha204_response,0x20);
 	if ( !status ) {	
 		printf("SUCCESS!^_^\n");
 	} else {

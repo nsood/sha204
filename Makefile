@@ -29,4 +29,4 @@ sha256.o : sha256.h sha256.c
 	$(CC) -c  $(INC) sha256.c
 
 clean : 
-	rm crypto atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o
+	rm  atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o
