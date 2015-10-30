@@ -795,10 +795,11 @@ struct sha204_command_parameters cmd_args;				// Global Generalized Command Para
 #define CHECKMAC_NO_TMPKEY_NO_DATA		(0x00)					// Mode: No Tempkey, No Other Data
 
 //atsha204_actions
+//atsha204_actions
 uint8_t atsha204_read_conf(int fd, int slot, uint8_t *read_conf);
 uint8_t atsha204_read_data(int fd, int slot, uint8_t *read_data);
-uint8_t atsha204_write_conf(int fd, int slot, uint8_t conf1, uint8_t conf2);
-uint8_t atsha204_write_data(int fd, int slot,  uint8_t *data);
-void atsha204_lock_config(int fd);
-void atsha204_lock_data(int fd);
+uint8_t atsha204_write_conf(int fd, int slot, uint8_t conf_low_8_bits, uint8_t conf_high_8_bits);
+uint8_t atsha204_write_data(int fd, int slot,  uint8_t *write_data);
+uint8_t atsha204_lock_conf(int fd);
+uint8_t atsha204_lock_data(int fd);
 
