@@ -1,7 +1,7 @@
 /*
- * encrypted_read.c
+ * encrypted_write.c
  *
- * Created: 11/2/2015 
+ * Created: 11/3/2015 
  *  Author: jli@acorn-net.com
  */ 
 
@@ -10,20 +10,20 @@
 #include "sha204_helper.h"
 #include "atsha204_ctc_d1_solutions.h"
 
-uint8_t read_num_in[20] = {
+uint8_t write_num_in[20] = {
 						0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 						0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
 						0x10, 0x11, 0x12, 0x13
 };
 
-uint8_t encrypted_read(int fd, uint16_t key_id, uint8_t *key_value,uint16_t slot, uint8_t *readdata) {
+uint8_t encrypted_write(int fd, uint16_t key_id, uint8_t *key_value, uint16_t slot, uint8_t *writedata) {
 	int i;
 	static uint8_t status = SHA204_SUCCESS;
 	static uint8_t tmpdata[0x20] = {0};
 	static uint8_t random_number[0x20] = {0};		// Random number returned by Random NONCE command
 	static uint8_t computed_response[0x20] = {0};	// Host computed expected response
-
-	struct sha204h_decrypt_in_out decrypt_param;	// Parameter for decrypt helper function
+	static uint8_t host_mac[0x20] = {0};	
+	struct sha204h_encrypt_in_out encrypt_param;	//Parameter for encrypt helper function
 	struct sha204h_nonce_in_out nonce_param;		// Parameter for nonce helper function
 	struct sha204h_gen_dig_in_out gendig_param;	// Parameter for gen_dig helper function
 	struct sha204h_temp_key computed_tempkey;		// TempKey parameter for nonce and gen_dig helper function
@@ -31,13 +31,13 @@ uint8_t encrypted_read(int fd, uint16_t key_id, uint8_t *key_value,uint16_t slot
 	//add by jli :That before every executing  cmd sent to ATSHA204 chip  should have waked it up once!
 	sha204p_wakeup(fd);
 	
-	printf("ATSHA204A encrypted read  !\n");
+	printf("ATSHA204A encrypted write  !\n");
 	//nonce operation
 	cmd_args.op_code = SHA204_NONCE;
 	cmd_args.param_1 = NONCE_MODE_SEED_UPDATE;
 	cmd_args.param_2 = NONCE_PARAM2;
 	cmd_args.data_len_1 = NONCE_NUMIN_SIZE;
-	cmd_args.data_1 = read_num_in;
+	cmd_args.data_1 = write_num_in;
 	cmd_args.data_len_2 = 0;
 	cmd_args.data_2 = NULL;
 	cmd_args.data_len_3 = 0;
@@ -54,12 +54,21 @@ uint8_t encrypted_read(int fd, uint16_t key_id, uint8_t *key_value,uint16_t slot
 
 	//host nonce operation
 	nonce_param.mode = NONCE_MODE_SEED_UPDATE;
-	nonce_param.num_in = read_num_in;
+	nonce_param.num_in = write_num_in;
 	nonce_param.rand_out = random_number;
 	nonce_param.temp_key = &computed_tempkey;
 	status = sha204h_nonce(nonce_param);
-	if(status != SHA204_SUCCESS) { printf("HOST   NONCE  FAILED! \n"); return -1; }
-	
+	if(status != SHA204_SUCCESS) { printf("HOST   NONCE  FAILED! \n");  return -1; }
+
+	//Host gengid operation
+	memcpy(tmpdata,key_value,0x20);	
+	gendig_param.zone = GENDIG_ZONE_DATA;
+	gendig_param.key_id = key_id;
+	gendig_param.stored_value = tmpdata;
+	gendig_param.temp_key = &computed_tempkey;
+	status = sha204h_gen_dig(gendig_param);
+	if(status != SHA204_SUCCESS) { printf("HOST   GENDIG  FAILED! \n");  return -1; }
+
 	//gendig operation
 	cmd_args.op_code = SHA204_GENDIG;
 	cmd_args.param_1 = GENDIG_ZONE_DATA;
@@ -76,25 +85,26 @@ uint8_t encrypted_read(int fd, uint16_t key_id, uint8_t *key_value,uint16_t slot
 	cmd_args.rx_buffer = global_rx_buffer;
 	status = sha204m_execute(fd,&cmd_args);
 	//sha204p_sleep(fd);
-	if(status != SHA204_SUCCESS) { printf("Mathine  GENGID  FAILED! \n"); return -1; }
-	
-	//Host gengid operation
-	memcpy(tmpdata,key_value,0x20);	
-	gendig_param.zone = GENDIG_ZONE_DATA;
-	gendig_param.key_id = key_id;
-	gendig_param.stored_value = tmpdata;
-	gendig_param.temp_key = &computed_tempkey;
-	status = sha204h_gen_dig(gendig_param);
-	if(status != SHA204_SUCCESS) { printf("HOST   GENDIG  FAILED! \n"); return -1; }
+	if(status != SHA204_SUCCESS) { printf("Mathine  GENGID  FAILED! \n");  return -1; }
 
-	//Read operation
-	cmd_args.op_code = SHA204_READ;
+	//Host XOR operation
+	memcpy(tmpdata,writedata,0x20);
+	encrypt_param.temp_key = &computed_tempkey;
+	encrypt_param.zone = SHA204_ZONE_DATA|SHA204_ZONE_COUNT_FLAG;
+	encrypt_param.address = (uint16_t)(slot * 8);
+	encrypt_param.data = tmpdata;
+	encrypt_param.mac = host_mac;
+	status = sha204h_encrypt(encrypt_param);
+	if(status != SHA204_SUCCESS) { printf("HOST   ENCRYPT  FAILED! \n");  return -1; }	
+
+	//Write operation
+	cmd_args.op_code = SHA204_WRITE;
 	cmd_args.param_1 = SHA204_ZONE_DATA|SHA204_ZONE_COUNT_FLAG;
 	cmd_args.param_2 =  (uint16_t)(slot * 8);
-	cmd_args.data_len_1 = 0;
-	cmd_args.data_1 = NULL;
-	cmd_args.data_len_2 = 0;
-	cmd_args.data_2 = NULL;
+	cmd_args.data_len_1 = SHA204_ZONE_ACCESS_32;
+	cmd_args.data_1 = tmpdata;
+	cmd_args.data_len_2 = SHA204_ZONE_ACCESS_32;
+	cmd_args.data_2 = encrypt_param.mac;
 	cmd_args.data_len_3 = 0;
 	cmd_args.data_3 = NULL;
 	cmd_args.tx_size = 0x30;
@@ -104,13 +114,8 @@ uint8_t encrypted_read(int fd, uint16_t key_id, uint8_t *key_value,uint16_t slot
 	//sha204p_wakeup(fd);	
 	status = sha204m_execute(fd,&cmd_args);
 	//sha204p_sleep(fd);
-	memcpy(tmpdata,&global_rx_buffer[1],0x20);
-	if(status != SHA204_SUCCESS) { printf("FAILED! e_read_data\n"); return -1 ; }
+	if(status != SHA204_SUCCESS) { printf("FAILED! e_write_data\n");  return -1 ; }
 
-	decrypt_param.data = tmpdata;
-	decrypt_param.temp_key = &computed_tempkey;
-	status = sha204h_decrypt(decrypt_param);
-	if(status != SHA204_SUCCESS) { printf("HOST   DECRYPT  FAILED! \n"); return -1; }
-	memcpy(readdata,tmpdata,0x20);
 	return status;
+
 }
