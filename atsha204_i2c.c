@@ -3,6 +3,7 @@
  *
  * Created: 10/6/2013 5:28:22 AM
  *  Author: easanghanwa
+  * Modified:jli@acorn-net.com
  */ 
 
 #include "atsha204_i2c.h"
@@ -90,14 +91,14 @@ uint8_t sha204p_receive_response(int fd, uint8_t size, uint8_t *response)
 	read(fd,&response[0],1);
 
 	count = response[0];
-	printf("\n>>>receive_response	:	%x\n",count);
+	printf("\n>>>rec_data_count		:	%x\n",count);
 	if ((count < SHA204_RSP_SIZE_MIN) || (count > SHA204_RSP_SIZE_MAX))
 		return SHA204_INVALID_SIZE;
 
 	ret = read(fd,response+1,count-1);
 	if (ret != -1)
 	{
-		printf("   >>>receive_response	:	%x \n",ret);	
+		printf("   >>>rec_response_count	:	%x \n",ret);	
 		p = response+1;
 		for(i=0;i<ret;i++,p++){
 			printf("%3x",*p);
@@ -106,7 +107,7 @@ uint8_t sha204p_receive_response(int fd, uint8_t size, uint8_t *response)
 		if(i == ret) printf("\n");
 	}
 
-	return (ret>0) ?  SHA204_SUCCESS : ret;
+	return (ret > count-1) ?  SHA204_SUCCESS : ret;
 }
 
 uint8_t sha204p_resync(int fd, uint8_t size, uint8_t *response)

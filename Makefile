@@ -1,12 +1,21 @@
 #CC = arm-linux-gnueabihf-gcc-4.7.3
 INC = $(CFLAGS)
 
-crypto : atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o
-	$(CC) -o crypto atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o
+crypto : encrypted_write.o encrypted_read.o atsha204_actions.o atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o
+	$(CC) -o crypto encrypted_write.o encrypted_read.o atsha204_actions.o atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o
 
 atsha204_ctc_d1_solutions.o : atsha204_ctc_d1_solutions.h atsha204_ctc_d1_solutions.c atsha204_DevRev_cmd.h atsha204_personalization.h random_challenge_response_authentication.h
 	$(CC) -c $(INC) atsha204_ctc_d1_solutions.c 
 
+atsha204_actions.o : atsha204_ctc_d1_solutions.h atsha204_actions.c sha204_comm_marshaling.h atsha204_i2c.h
+	$(CC) -c $(INC) atsha204_actions.c 
+
+encrypted_read.o : encrypted_read.c sha204_comm_marshaling.h atsha204_i2c.h sha204_helper.h
+	$(CC) -c $(INC) encrypted_read.c 
+
+encrypted_write.o : encrypted_write.c sha204_comm_marshaling.h atsha204_i2c.h sha204_helper.h
+	$(CC) -c $(INC) encrypted_write.c 
+	
 atsha204_DevRev_cmd.o : atsha204_DevRev_cmd.h atsha204_DevRev_cmd.c sha204_comm_marshaling.h atsha204_i2c.h
 	$(CC) -c $(INC) atsha204_DevRev_cmd.c 
 
@@ -29,4 +38,4 @@ sha256.o : sha256.h sha256.c
 	$(CC) -c  $(INC) sha256.c
 
 clean : 
-	rm  atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o
+	rm crypto encrypted_write.o encrypted_read.o atsha204_actions.o atsha204_ctc_d1_solutions.o atsha204_DevRev_cmd.o atsha204_i2c.o atsha204_personalization.o random_challenge_response_authentication.o sha204_comm.o sha204_comm_marshaling.o sha204_helper.o sha256.o

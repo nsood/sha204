@@ -3,11 +3,12 @@
  *
  * Created: 10/9/2013 9:15:46 PM
  *  Author: easanghanwa
+ * Modified:jli@acorn-net.com
  */ 
 
 #include "random_challenge_response_authentication.h"
 
-void random_challenge_response_authentication(int fd) {
+void random_challenge_response_authentication(int fd, uint16_t key_id, uint8_t *secret_key_value) {
 	
 	static uint8_t status = SHA204_SUCCESS;
 	static uint8_t random_number[0x20] = {0};		// Random number returned by Random NONCE command
@@ -20,7 +21,7 @@ void random_challenge_response_authentication(int fd) {
 	//add by jli :That before every executing  cmd sent to ATSHA204 chip  should have waked it up once!
 	sha204p_wakeup(fd);
 	
-	printf("Random Chal_Response r_1\n");
+	printf("Random Chal_Response r\n");
 	
 	// Notes: 
 	// 1.	Random Challenge-Response involves the use of a random
@@ -68,11 +69,11 @@ void random_challenge_response_authentication(int fd) {
 	cmd_args.rx_size = NONCE_RSP_SIZE_LONG;			 
 	cmd_args.rx_buffer = global_rx_buffer;
 	status = sha204m_execute(fd,&cmd_args);
-	sha204p_idle(fd);
-	if(status != SHA204_SUCCESS) { printf("FAILED! (1)r_2\n"); return; }
+	//sha204p_idle(fd);
+	if(status != SHA204_SUCCESS) { printf(" Mathine NONCE  FAILED! \n"); return; }
 	
 	// Capture the random number from the NONCE command if it were successful
-	status = memcpy(random_number,&global_rx_buffer[1],0x20);
+	memcpy(random_number,&global_rx_buffer[1],0x20);
 	
 	// *** STEP 2:	COMPUTE THE EQUIVALENT NONCE ON THE HOST SIDE
 	//
@@ -84,7 +85,7 @@ void random_challenge_response_authentication(int fd) {
 	nonce_param.rand_out = random_number;
 	nonce_param.temp_key = &computed_tempkey;
 	status = sha204h_nonce(nonce_param);
-	if(status != SHA204_SUCCESS) { printf("FAILED! (2)r_3\n"); return; }
+	if(status != SHA204_SUCCESS) { printf("HOST   NONCE  FAILED! \n"); return; }
 
 	
 	// *** STEP 3:	ISSUE THE MAC COMMAND
@@ -96,7 +97,7 @@ void random_challenge_response_authentication(int fd) {
 	// Issue the MAC command
 	cmd_args.op_code = SHA204_MAC;
 	cmd_args.param_1 = MAC_MODE_BLOCK2_TEMPKEY;
-	cmd_args.param_2 = KEY_ID_0;
+	cmd_args.param_2 = key_id;
 	cmd_args.data_len_1 = 0; 
 	cmd_args.data_1 = NULL;
 	cmd_args.data_len_2 = 0;
@@ -108,8 +109,8 @@ void random_challenge_response_authentication(int fd) {
 	cmd_args.rx_size = MAC_RSP_SIZE;
 	cmd_args.rx_buffer = global_rx_buffer;
 	status = sha204m_execute(fd,&cmd_args);
-	sha204p_sleep(fd);
-	if(status != SHA204_SUCCESS) { printf("FAILED! (3)r_4\n"); return; }
+	//sha204p_sleep(fd);
+	if(status != SHA204_SUCCESS) { printf("Mathine  MACFAILED! \n"); return; }
 	
 	// Capture actual response from the ATSHA204 device
 	memcpy(atsha204_response,&global_rx_buffer[1],0x20);
@@ -121,7 +122,7 @@ void random_challenge_response_authentication(int fd) {
 	//				value.
 	
 	mac_param.mode = MAC_MODE_BLOCK2_TEMPKEY;
-	mac_param.key_id = KEY_ID_0;
+	mac_param.key_id = key_id;
 	mac_param.challenge = NULL;
 	mac_param.key = secret_key_value;
 	mac_param.otp = NULL;
@@ -129,15 +130,15 @@ void random_challenge_response_authentication(int fd) {
 	mac_param.response = computed_response;
 	mac_param.temp_key = &computed_tempkey;
 	status = sha204h_mac(mac_param);
-	if(status != SHA204_SUCCESS) { printf("FAILED! (4)r_5\n"); return; }
+	if(status != SHA204_SUCCESS) { printf("HOST   MAC  FAILED! \n"); return; }
 	
 	
 	// Moment of truth: Compare the received response with the dynamically computed expected response.
-	memcmp(computed_response,atsha204_response,0x20);
+	status = memcmp(computed_response,atsha204_response,0x20);
 	if ( !status ) {	
-		printf("SUCCESS!^_^\n");
+		printf("Authentication  SUCCESS!\n");
 	} else {
-		 printf("FAILED! (4)r_6\n"); 
+		 printf("Authentication   FAILED! \n"); 
 		 return; 
 	}
 	
